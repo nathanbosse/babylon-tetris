@@ -19,7 +19,7 @@ export class TetrisGame {
     return Array.from({ length: 20 }, () => Array(10).fill(null))
   }
 
-  updateBlockMeshes(scene: BABYLON.Scene) {
+  updateBlockMeshes(scene: BABYLON.Scene, isRight: boolean) {
     // Ensure we have a mesh for each block in the current piece
     while (this.blockMeshes.length < this.currentBlock.blocks.length) {
       const mesh = BABYLON.MeshBuilder.CreateBox('block', { size: 1 }, scene)
@@ -29,8 +29,9 @@ export class TetrisGame {
     this.currentBlock.blocks.forEach((block, index) => {
       const mesh = this.blockMeshes[index]
       mesh.position.x = GRID_START_POS.x + block.x * GRID_CELL_SIZE
-      mesh.position.y = GRID_START_POS.y - block.y * GRID_CELL_SIZE
+      mesh.position.y = isRight ? GRID_START_POS.y - block.y * GRID_CELL_SIZE : -10000000
       mesh.position.z = 0 // Adjust as needed
+      mesh.isVisible = isRight ? true : false
       // Update any other properties
     })
     // Hide any extra meshes
