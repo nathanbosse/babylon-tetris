@@ -4,9 +4,8 @@ import * as BABYLON from 'babylonjs'
 import 'babylonjs-loaders'
 import '@babylonjs/core/Debug/debugLayer'
 import '@babylonjs/inspector'
-import { Engine, Scene } from '@babylonjs/core'
 
-function App() {
+const App = () => {
   const canvasRef = useRef(null)
   const engineRef = useRef(null)
 
@@ -51,4 +50,5 @@ function App() {
 // Render your app
 //@ts-ignore
 const root = createRoot(document.getElementById('root'))
+//@ts-ignore
 root.render(<App />)
