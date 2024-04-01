@@ -1,0 +1,40 @@
+{
+  "name": "react-xr-simple-demo",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "main": "src/index.tsx",
+  "dependencies": {
+    "@react-three/drei": "9.74.15",
+    "@react-three/fiber": "8.13.3",
+    "@react-three/xr": "5.5.0",
+    "@types/react": "18.0.10",
+    "@types/react-dom": "18.0.5",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-scripts": "5.0.1",
+    "three": "0.153.0",
+    "babylonjs": "7.0.0",
+    "babylonjs-loaders": "7.0.0",
+    "@babylonjs/core": "7.0.0",
+    "@babylonjs/inspector": "7.0.0",
+    "@babylonjs/materials": "7.0.0",
+    "@babylonjs/gui": "7.0.0",
+    "@babylonjs/gui-editor": "7.0.0",
+    "@babylonjs/loaders": "7.0.0",
+    "@babylonjs/serializers": "7.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}
