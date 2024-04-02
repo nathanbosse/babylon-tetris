@@ -1261,6 +1261,13 @@ prop-types@^15.6.0:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
+react-babylonjs@^3.1.30:
+  version "3.1.30"
+  resolved "https://registry.yarnpkg.com/react-babylonjs/-/react-babylonjs-3.1.30.tgz#e0e5b9e16ff9b25751edfe980c4c7212bf2673f4"
+  integrity sha512-qALWc/2AjxxIvWreDEoXYMwc/gycttOa6PvmrFVhSX5bG40hOT/jnOjg0VfZ8tDdd/iNI2r6GFS9YynUug4WHg==
+  dependencies:
+    react-reconciler "^0.27.0"
+
 react-composer@^5.0.3:
   version "5.0.3"
   resolved "https://registry.npmjs.org/react-composer/-/react-composer-5.0.3.tgz"
