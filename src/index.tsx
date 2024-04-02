@@ -88,6 +88,7 @@ const CreateTetrisBlocks = ({ tetrisGame }) => {
   //       })
   //     }
 
+
   //     scene.onBeforeCameraRenderObservable.add(onBeforeCameraRender)
 
   //     // Clean-up function to remove the observable on component unmount
