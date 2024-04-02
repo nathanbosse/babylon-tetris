@@ -5,6 +5,10 @@ import * as BABYLON from 'babylonjs'
 import '@babylonjs/loaders'
 import { Vector3, Color3, WebXRDefaultExperience } from '@babylonjs/core'
 import { createInitialGameState, updateBlockMeshes, update, GRID_START_POS, GRID_CELL_SIZE } from './TetrisGame'
+import { useIsRightCamera } from './isRightCamera'
+const LEFT_EYE_LAYER = 0x10000000 // Bitmask for the left eye layer
+const RIGHT_EYE_LAYER = 0x20000000 // Bitmask for the right eye layer
+const UI_GAME_BOARD_LAYER = 0x40000000 // Bitmask for UI/game board layer
 
 const App = () => {
   // Initialize the Tetris game logic here, if necessary
@@ -12,26 +16,23 @@ const App = () => {
   const [scene, setScene] = useState(null)
   const [isRightCamera, setIsRightCamera] = useState(true)
   const [secondsElapsed, setSecondsElapsed] = useState(0)
-  // useEffect(() => {
-  //   if (!scene) return
+  const [updateTrigger, setUpdateTrigger] = useState(0) // Additional state to force update
+  const forceUpdate = () => setUpdateTrigger(Date.now()) // Function to trigger re-render
 
-  //   const onBeforeRender = (camera) => {
-  //     let isRightCamera = camera.isRightCamera
-  //     console.log('isRightCamera', isRightCamera)
-  //     setIsRightCamera(isRightCamera)
-  //     // Assuming you have a way to access your material here
-  //     // This example assumes a global or context-accessible material for demonstration
-  //     // globalMaterial.diffuseColor = isRightCamera ? new Color3(0, 0, 1) : new Color3(1, 0, 0);
-  //     // Update your game state or perform actions based on the camera
-  //     setGameState(
-  //   }
+  useEffect(() => {
+    if (!scene) return
 
-  //   scene.onBeforeCameraRenderObservable.add(onBeforeRender)
-
-  //   return () => {
-  //     scene.onBeforeCameraRenderObservable.removeCallback(onBeforeRender)
-  //   }
-  // }, [scene, secondsElapsed, gameState])
+    const onBeforeRender = scene.onBeforeCameraRenderObservable.add((camera) => {
+      if (camera.isRightCamera) {
+        camera.layerMask = RIGHT_EYE_LAYER | UI_GAME_BOARD_LAYER
+      } else {
+        camera.layerMask = LEFT_EYE_LAYER | UI_GAME_BOARD_LAYER
+      }
+    })
+    return () => {
+      scene.onBeforeCameraRenderObservable.removeCallback(onBeforeRender)
+    }
+  }, [scene, gameState])
 
   useEffect(() => {
     // Automatic game update, e.g., moving blocks down periodically
@@ -65,16 +66,16 @@ const App = () => {
         {/* Render grid boundaries using react-babylonjs components */}
         <vrExperienceHelper webVROptions={{ createDeviceOrientationCamera: false }} enableInteractions={true} />
         <CreateGridBoundary />
-        <CreateTetrisBlocks tetrisGame={gameState} />
+        <CreateTetrisBlocks tetrisGame={gameState} isRightCamera={isRightCamera} />
       </Scene>
     </Engine>
   )
 }
 
-const CreateTetrisBlocks = ({ tetrisGame }) => {
+const CreateTetrisBlocks = ({ tetrisGame, isRightCamera }) => {
   const scene = useScene()
   const meshRefs = useRef([])
-
+  // const isRightCamera = useIsRightCamera(scene)
   // useEffect(() => {
   //   if (scene) {
   //     const onBeforeCameraRender = (camera) => {
@@ -87,7 +88,6 @@ const CreateTetrisBlocks = ({ tetrisGame }) => {
   //         }
   //       })
   //     }
-
 
   //     scene.onBeforeCameraRenderObservable.add(onBeforeCameraRender)
 
@@ -104,11 +104,13 @@ const CreateTetrisBlocks = ({ tetrisGame }) => {
   return (
     <>
       {tetrisGame.currentBlock.blocks.map((block, index) => (
-        <Box
+        <box
           keby={index}
           name={`block-${index}`}
           size={GRID_CELL_SIZE}
-          isVisible={true} // Control visibility based on state
+          layer={LEFT_EYE_LAYER}
+          layerMask={LEFT_EYE_LAYER}
+          isVisible={isRightCamera} // Control visibility based on state
           position={new Vector3(GRID_START_POS.x + block.x * GRID_CELL_SIZE, GRID_START_POS.y - block.y * GRID_CELL_SIZE, 0)}
           color={Color3.Random()}
         />
@@ -134,8 +136,13 @@ const CreateGridBoundary = () => {
       <box
         name="topBoundary"
         width={width}
+        layer={UI_GAME_BOARD_LAYER}
+        layerMask={UI_GAME_BOARD_LAYER}
         height={thickness}
         depth={1}
+        // onCreated={(mesh) => {
+        //   mesh.layerMask = UI_GAME_BOARD_LAYER
+        // }}
         position={new Vector3(GRID_START_POS.x + width / 2 - GRID_CELL_SIZE / 2, topPositionY, 0)}
         color={new Color3(1, 0, 0)}
       />
