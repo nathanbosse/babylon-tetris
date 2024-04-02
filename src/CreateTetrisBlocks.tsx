@@ -6,7 +6,7 @@ import { GRID_START_POS, GRID_CELL_SIZE } from './TetrisGame'
 const LEFT_EYE_LAYER = 0x10000000 // Bitmask for the left eye layer
 const RIGHT_EYE_LAYER = 0x20000000 // Bitmask for the right eye layer
 const UI_GAME_BOARD_LAYER = 0x40000000 // Bitmask for UI/game board layer
-export const CreateTetrisBlocks = ({ gameState, isRightCamera }) => {
+export const CreateTetrisBlocks: React.FC<{ gameState: any; isRightCamera: any }> = ({ gameState, isRightCamera }) => {
   return (
     <>
       <>
