@@ -136,7 +136,6 @@ const CreateGridBoundary = () => {
       <box
         name="topBoundary"
         width={width}
-        layer={UI_GAME_BOARD_LAYER}
         layerMask={UI_GAME_BOARD_LAYER}
         height={thickness}
         depth={1}
@@ -150,6 +149,7 @@ const CreateGridBoundary = () => {
       {/* Bottom Boundary */}
       <box
         name="bottomBoundary"
+        layerMask={UI_GAME_BOARD_LAYER}
         width={width}
         height={thickness}
         depth={1}
@@ -161,6 +161,7 @@ const CreateGridBoundary = () => {
       <box
         name="leftBoundary"
         width={thickness}
+        layerMask={UI_GAME_BOARD_LAYER}
         height={height + GRID_CELL_SIZE}
         depth={1}
         position={new Vector3(leftPositionX, GRID_START_POS.y - height / 2, 0)}
@@ -171,6 +172,7 @@ const CreateGridBoundary = () => {
       <box
         name="rightBoundary"
         width={thickness}
+        layerMask={UI_GAME_BOARD_LAYER}
         height={height + GRID_CELL_SIZE}
         depth={1}
         position={new Vector3(rightPositionX, GRID_START_POS.y - height / 2, 0)}
