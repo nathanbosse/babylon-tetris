@@ -8,6 +8,7 @@ export const GRID_START_POS = { x: -5, y: 10 }
 export interface GameState {
   grid: (Block | null)[][]
   currentBlock: TetrisShape & { position: Block }
+  placedBlocks: TetrisShape[]
   blockMeshes: BABYLON.Mesh[]
 }
 
@@ -31,12 +32,25 @@ function spawnNewBlock(): TetrisShape & { position: Block } {
 
   // Center the block horizontally in the grid and position it at the top
   const gridWidth = 10 // Assuming grid width is 10
-  const pieceWidth = newBlock.blocks.reduce((max, block) => Math.max(max, block.x), 0) + 1
-  const gridCenterX = Math.floor((gridWidth - pieceWidth) / 2)
+  // Find the min and max x values for the shape to calculate its width
+  const minX = Math.min(...newBlock.blocks.map((block) => block.x))
+  const maxX = Math.max(...newBlock.blocks.map((block) => block.x))
+  const pieceWidth = maxX - minX + 1
+
+  // Adjust gridCenterX to account for the piece's actual width
+  const gridCenterX = Math.floor((gridWidth - pieceWidth) / 2) - minX // Adjusting for minX ensures alignment is based on piece width
+
+  // Adjust block positions based on the new center
+  const adjustedBlocks = newBlock.blocks.map((block) => ({
+    ...block,
+    x: block.x + gridCenterX,
+    y: block.y // Y position remains the same
+  }))
 
   return {
     ...newBlock,
-    position: { x: gridCenterX, y: 0 }
+    position: { x: gridCenterX, y: 0 }, // Initial position for the piece
+    blocks: adjustedBlocks // Use the adjusted blocks
   }
 }
 
@@ -59,7 +73,8 @@ export function moveBlock(gameState: GameState, deltaX: number, deltaY: number):
     const newY = block.y + newPosition.y
 
     // Check bounds (assuming grid is 10x20) and if the position is not already filled
-    return newX >= 0 && newX < 10 && newY >= 0 && newY < 20 && (!gameState.grid[newY] || gameState.grid[newY][newX] === null)
+    // todo: use grid constants
+    return newX >= 0 && newX < 10 && newY >= 0 && newY < 40 && (!gameState.grid[newY] || gameState.grid[newY][newX] === null)
   })
 
   if (!isValid) {
@@ -82,7 +97,7 @@ export function moveBlock(gameState: GameState, deltaX: number, deltaY: number):
     const x = block.x
     const y = block.y
     if (y >= 0 && y < 20 && x >= 0 && x < 10) {
-      newGrid[y][x] = { ...block } // Assuming a structure for blocks; adjust as needed
+      newGrid[y][x] = { ...block }
     }
   })
 
@@ -104,21 +119,9 @@ export function rotateBlock(gameState: GameState): GameState {
   return gameState
 }
 
-// Additional functions like rotateShape, isValidPosition, checkForCompleteLines, and update should follow a similar pattern
-// Complete implementations for remaining core functions
-
 function rotateShape(shape: Block[]): Block[] {
   // Rotate shape 90 degrees clockwise
   return shape.map((block) => ({ x: -block.y, y: block.x }))
-}
-
-function isValidPosition(grid: (Block | null)[][], position: Block, shape: Block[]): boolean {
-  // Check if a new position is valid
-  return shape.every((block) => {
-    const newX = position.x + block.x
-    const newY = position.y + block.y
-    return true //newX >= 0 && newX < grid[0].length && newY >= 0 && newY < grid.length && grid[newY][newX] === null
-  })
 }
 
 export function checkForCompleteLines(gameState: GameState): GameState {
