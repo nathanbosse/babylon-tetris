@@ -55,7 +55,7 @@ const App = () => {
         <hemisphericLight name="light" direction={new Vector3(1, 1, 0)} intensity={0.7} />
         <vrExperienceHelper webVROptions={{ createDeviceOrientationCamera: false }} enableInteractions={true} />
         <CreateGridBoundary />
-        <CreateTetrisBlocks tetrisGame={gameState} isRightCamera={isRightCamera} />
+        <CreateTetrisBlocks gameState={gameState} isRightCamera={isRightCamera} />
       </Scene>
     </Engine>
   )

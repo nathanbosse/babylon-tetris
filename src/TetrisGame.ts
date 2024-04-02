@@ -1,14 +1,14 @@
-// TetrisGameFunctions.ts
 import * as BABYLON from 'babylonjs'
 import { Block, TetrisShape, createShape, TetrisShapes } from './Shapes'
 
 export const GRID_CELL_SIZE = 1 // Assuming each grid cell is 1x1 units in world space
-export const GRID_START_POS = { x: -5, y: 10 }
+export const GRID_WIDTH = 10
+export const GRID_HEIGHT = 20
+export const GRID_START_POS = { x: -5, y: 10 } // Adjust as needed
 
 export interface GameState {
   grid: (Block | null)[][]
   currentBlock: TetrisShape & { position: Block }
-  placedBlocks: TetrisShape[]
   blockMeshes: BABYLON.Mesh[]
 }
 
@@ -22,7 +22,7 @@ export function createInitialGameState(): GameState {
 }
 
 function createEmptyGrid(): (Block | null)[][] {
-  return Array.from({ length: 20 }, () => Array(10).fill(null))
+  return Array.from({ length: GRID_HEIGHT }, () => Array(GRID_WIDTH).fill(null))
 }
 
 function spawnNewBlock(): TetrisShape & { position: Block } {
@@ -31,124 +31,158 @@ function spawnNewBlock(): TetrisShape & { position: Block } {
   const newBlock = createShape(shapeType)
 
   // Center the block horizontally in the grid and position it at the top
-  const gridWidth = 10 // Assuming grid width is 10
-  // Find the min and max x values for the shape to calculate its width
   const minX = Math.min(...newBlock.blocks.map((block) => block.x))
   const maxX = Math.max(...newBlock.blocks.map((block) => block.x))
   const pieceWidth = maxX - minX + 1
+  const gridCenterX = Math.floor((GRID_WIDTH - pieceWidth) / 2) - minX
 
-  // Adjust gridCenterX to account for the piece's actual width
-  const gridCenterX = Math.floor((gridWidth - pieceWidth) / 2) - minX // Adjusting for minX ensures alignment is based on piece width
-
-  // Adjust block positions based on the new center
   const adjustedBlocks = newBlock.blocks.map((block) => ({
     ...block,
     x: block.x + gridCenterX,
-    y: block.y // Y position remains the same
+    y: block.y
   }))
 
   return {
     ...newBlock,
-    position: { x: gridCenterX, y: 0 }, // Initial position for the piece
-    blocks: adjustedBlocks // Use the adjusted blocks
+    position: { x: gridCenterX, y: 0 },
+    blocks: adjustedBlocks
   }
 }
 
 export function updateBlockMeshes(gameState: GameState, scene: BABYLON.Scene, isRight: boolean): GameState {
-  // Simplified for brevity. Implement logic to update or create block meshes based on gameState
-  // This function should return a new GameState with updated blockMeshes
+  // Implementation for updating block meshes based on the current game state
+  // This function should ideally update gameState.blockMeshes based on gameState.currentBlock
   return gameState
 }
 
 export function moveBlock(gameState: GameState, deltaX: number, deltaY: number): GameState {
-  // Calculate the new position for the current block
   const newPosition = {
     x: gameState.currentBlock.position.x + deltaX,
     y: gameState.currentBlock.position.y + deltaY
   }
 
-  // Check if the new position is valid for every block in the current piece
   const isValid = gameState.currentBlock.blocks.every((block) => {
-    const newX = block.x + newPosition.x
-    const newY = block.y + newPosition.y
-
-    // Check bounds (assuming grid is 10x20) and if the position is not already filled
-    // todo: use grid constants
-    return newX >= 0 && newX < 10 && newY >= 0 && newY < 40 && (!gameState.grid[newY] || gameState.grid[newY][newX] === null)
+    const newX = newPosition.x + block.x
+    const newY = newPosition.y + block.y
+    return (
+      newX >= 0 && newX < GRID_WIDTH && newY >= 0 && newY < GRID_HEIGHT && (!gameState.grid[newY] || gameState.grid[newY][newX] === null)
+    )
   })
 
-  if (!isValid) {
-    // If the move is invalid, return the current game state without any changes
-    return gameState
+  if (isValid) {
+    const updatedBlocks = gameState.currentBlock.blocks.map((block) => ({
+      ...block,
+      x: block.x + deltaX,
+      y: block.y + deltaY
+    }))
+
+    return {
+      ...gameState,
+      currentBlock: {
+        ...gameState.currentBlock,
+        position: newPosition,
+        blocks: updatedBlocks
+      }
+    }
+  } else {
+    // If the move is invalid or the block has settled, integrate it into the grid
+    // and spawn a new block
+    const newGrid = integrateBlockIntoGrid(gameState)
+    return {
+      ...gameState,
+      grid: newGrid,
+      currentBlock: spawnNewBlock()
+    }
   }
+}
 
-  // Assuming movement is valid, update block positions within currentBlock
-  const updatedBlocks = gameState.currentBlock.blocks.map((block) => ({
-    ...block,
-    x: block.x + deltaX,
-    y: block.y + deltaY
-  }))
+function integrateBlockIntoGrid(gameState: GameState): (Block | null)[][] {
+  const newGrid = createEmptyGrid()
+  gameState.grid.forEach((row, y) =>
+    row.forEach((cell, x) => {
+      if (cell !== null) newGrid[y][x] = cell
+    })
+  )
 
-  // Create a new grid to reflect the moved block, starting by clearing the old positions
-  const newGrid = gameState.grid.map((row) => row.map((cell) => null))
-
-  // Mark the block's new position on the grid
-  updatedBlocks.forEach((block) => {
-    const x = block.x
-    const y = block.y
-    if (y >= 0 && y < 20 && x >= 0 && x < 10) {
-      newGrid[y][x] = { ...block }
+  gameState.currentBlock.blocks.forEach((block) => {
+    const x = gameState.currentBlock.position.x + block.x
+    const y = gameState.currentBlock.position.y + block.y
+    if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) {
+      newGrid[y][x] = block
     }
   })
+  return newGrid
+}
 
-  // Return a new game state with the updated currentBlock and grid
+// Additional functions such as rotateBlock, update, and others would follow the same pattern,
+// making use of the GRID_WIDTH and GRID_HEIGHT constants to ensure consistency.
+export function rotateBlock(gameState: GameState): GameState {
+  // Calculate new orientation for the current block after rotation
+  const rotatedBlocks = rotateShape(gameState.currentBlock.blocks)
+
+  // Check if the rotated position is valid
+  const isValid = rotatedBlocks.every((block) => {
+    const newX = gameState.currentBlock.position.x + block.x
+    const newY = gameState.currentBlock.position.y + block.y
+    return (
+      newX >= 0 && newX < GRID_WIDTH && newY >= 0 && newY < GRID_HEIGHT && (!gameState.grid[newY] || gameState.grid[newY][newX] === null)
+    )
+  })
+
+  if (isValid) {
+    // Apply rotation
+    return {
+      ...gameState,
+      currentBlock: {
+        ...gameState.currentBlock,
+        blocks: rotatedBlocks
+      }
+    }
+  }
+
+  // If rotation is not valid, return the original state
+  return gameState
+}
+
+function rotateShape(blocks: Block[]): Block[] {
+  // Rotate shape 90 degrees clockwise
+  return blocks.map((block) => ({ x: -block.y, y: block.x }))
+}
+
+export function checkForCompleteLines(gameState: GameState): GameState {
+  const newGrid = gameState.grid.map((row) => row.slice()) // Clone the grid
+  let linesCleared = 0
+
+  for (let y = 0; y < GRID_HEIGHT; y++) {
+    if (newGrid[y].every((cell) => cell !== null)) {
+      newGrid.splice(y, 1) // Remove the complete line
+      newGrid.unshift(new Array(GRID_WIDTH).fill(null)) // Add an empty line at the top
+      linesCleared++
+    }
+  }
+
+  // Optional: Add score calculation based on linesCleared
+
   return {
     ...gameState,
-    currentBlock: {
-      ...gameState.currentBlock,
-      position: newPosition,
-      blocks: updatedBlocks // Update the blocks array with the new positions
-    },
     grid: newGrid
   }
 }
 
-export function rotateBlock(gameState: GameState): GameState {
-  // Implement the logic to rotate the block. This should return a new GameState
-  // Ensure not to mutate the input gameState directly
+export function update(gameState: GameState, scene: BABYLON.Scene, isRight: boolean): GameState {
+  // Simplified update function: move the block down and check for settled block
+  gameState = moveBlock(gameState, 0, 1)
+
+  // After moving the block, check if any lines are completed
+  gameState = checkForCompleteLines(gameState)
+
+  // Update block meshes to reflect the new game state
+  gameState = updateBlockMeshes(gameState, scene, isRight)
+
   return gameState
 }
 
-function rotateShape(shape: Block[]): Block[] {
-  // Rotate shape 90 degrees clockwise
-  return shape.map((block) => ({ x: -block.y, y: block.x }))
-}
-
-export function checkForCompleteLines(gameState: GameState): GameState {
-  const newGrid = gameState.grid.map((row) => [...row]) // Clone grid for immutability
-  let linesCleared = 0
-
-  for (let y = newGrid.length - 1; y >= 0; y--) {
-    if (newGrid[y].every((block) => block !== null)) {
-      newGrid.splice(y, 1) // Remove the complete line
-      newGrid.unshift(Array(10).fill(null)) // Add an empty line at the top
-      linesCleared++
-      y++ // Since we modified the grid, check the same row index again
-    }
-  }
-
-  return { ...gameState, grid: newGrid }
-}
-
-export function update(gameState: GameState, scene: BABYLON.Scene, isRight: boolean): GameState {
-  // Example update function to move the block down every update call
-  let newGameState = moveBlock(gameState, 0, 1)
-
-  // Check for complete lines after the move
-  newGameState = checkForCompleteLines(newGameState)
-
-  // Update block meshes to reflect the current game state
-  newGameState = updateBlockMeshes(newGameState, scene, isRight)
-
-  return newGameState
+export function createBlockMeshes(gameState: GameState, scene: BABYLON.Scene): void {
+  // Create or update meshes for currentBlock
+  // This function would ideally iterate over gameState.currentBlock.blocks and create/update BABYLON.Meshes accordingly
 }
