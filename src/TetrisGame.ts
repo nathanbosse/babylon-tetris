@@ -19,7 +19,7 @@ export class TetrisGame {
     return Array.from({ length: 20 }, () => Array(10).fill(null))
   }
 
-  updateBlockMeshes(scene: BABYLON.Scene) {
+  updateBlockMeshes(scene: BABYLON.Scene, isRight: boolean) {
     // Ensure we have a mesh for each block in the current piece
     while (this.blockMeshes.length < this.currentBlock.blocks.length) {
       const mesh = BABYLON.MeshBuilder.CreateBox('block', { size: 1 }, scene)
@@ -30,8 +30,7 @@ export class TetrisGame {
       const mesh = this.blockMeshes[index]
       mesh.position.x = GRID_START_POS.x + block.x * GRID_CELL_SIZE
       mesh.position.y = GRID_START_POS.y - block.y * GRID_CELL_SIZE
-      mesh.position.z = 0 // Adjust as needed
-      // Update any other properties
+      mesh.isVisible = !isRight ? true : false
     })
     // Hide any extra meshes
     for (let i = this.currentBlock.blocks.length; i < this.blockMeshes.length; i++) {
@@ -58,9 +57,27 @@ export class TetrisGame {
   }
 
   moveBlock(deltaX: number, deltaY: number): void {
-    const newPosition = { x: this.currentBlock.position.x + deltaX, y: this.currentBlock.position.y + deltaY }
-    if (this.isValidPosition(newPosition)) {
-      this.currentBlock.position = newPosition
+    // Calculate the new position for each block in the current piece
+    const newPositions = this.currentBlock.blocks.map((block) => ({
+      x: block.x + deltaX,
+      y: block.y + deltaY
+    }))
+
+    // Check if the new position is valid for every block in the piece
+    const isValid = newPositions.every((pos) =>
+      this.isValidPosition({
+        x: this.currentBlock.position.x + pos.x,
+        y: this.currentBlock.position.y + pos.y
+      })
+    )
+
+    if (isValid) {
+      // Update the position of the current piece
+      this.currentBlock.position.x += deltaX
+      this.currentBlock.position.y += deltaY
+
+      // Update the positions of all blocks within the piece
+      this.currentBlock.blocks = newPositions
     }
   }
 
@@ -81,7 +98,8 @@ export class TetrisGame {
     return shape.every((block) => {
       const newX = position.x + block.x
       const newY = position.y + block.y
-      return newX >= 0 && newX < 10 && newY >= 0 && newY < 20 && !this.grid[newY][newX]
+      return true // newX >= 0 && newX < 10 && newY >= 0 && newY <= 21
+      // && !this.grid[newY][newX]
     })
   }
 

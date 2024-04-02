@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as BABYLON from 'babylonjs'
 import 'babylonjs-loaders'
@@ -32,12 +32,8 @@ const App = () => {
       // box.material = material
 
       const tetrisGame = new TetrisGame()
-
-      engine.runRenderLoop(() => {
-        scene.render()
-        tetrisGame.update() // Move the current block down
-        // Update block meshes based on the new game state
-      })
+      let accumulatedTime = 0
+      const updateInterval = 1000
 
       // Call this function after initializing your scene and before starting the game loop
       createGridBoundary(scene)
@@ -47,31 +43,20 @@ const App = () => {
         let isRightCamera = camera.isRightCamera
         console.log('isRightCamera ', isRightCamera)
         material.diffuseColor = isRightCamera ? new BABYLON.Color3(0, 0, 1) : new BABYLON.Color3(1, 0, 0)
-        // Example: Creating a mesh for the current Tetris block
-        // tetrisGame.currentBlock.shape.forEach(([x, y]) => {
-        //   const box = BABYLON.MeshBuilder.CreateBox('block', { size: 1 }, scene)
-        //   box.position.x = x + tetrisGame.currentBlock.position.x
-        //   box.position.y = !isRightCamera ? y + tetrisGame.currentBlock.position.y : -1000
-        //   box.isVisible = !isRightCamera ? true : false
-        //   // Adjust materials or visibility based on game state and VR eye rendering
-        // })
-        tetrisGame.currentBlock.blocks.forEach((block) => {
-          const mesh = BABYLON.MeshBuilder.CreateBox('block', { size: 1 }, scene)
-          // Translate grid coordinates (block.x, block.y) to world space
-          mesh.position.x = GRID_START_POS.x + block.x * GRID_CELL_SIZE
-          mesh.position.y = GRID_START_POS.y - block.y * GRID_CELL_SIZE // Assuming y=0 is at the top of the grid
-          mesh.position.z = 0
-          mesh.isVisible = !isRightCamera ? true : false
-        })
+        tetrisGame.updateBlockMeshes(scene, isRightCamera)
       })
 
       engine.runRenderLoop(() => {
+        const deltaTime = engine.getDeltaTime()
+
+        accumulatedTime += deltaTime
+        if (accumulatedTime > updateInterval) {
+          tetrisGame.update() // Move the current block down
+          accumulatedTime -= updateInterval // Reset accumulated time
+        }
+
         scene.render()
-        tetrisGame.update() // Move the current block down
-
-        tetrisGame.updateBlockMeshes(scene)
       })
-
       return () => {
         engine.dispose()
       }
