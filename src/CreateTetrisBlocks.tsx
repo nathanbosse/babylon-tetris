@@ -13,7 +13,13 @@ export const CreateTetrisBlocks = ({ gameState }) => {
           name={`block-${index}`}
           size={GRID_CELL_SIZE}
           layerMask={LEFT_EYE_LAYER} // Ensure visibility on the left eye and UI/game board layer
-          position={new Vector3(block.x, block.y, 0)}
+          position={
+            new Vector3(
+              (block.x - GRID_WIDTH / 2) * GRID_CELL_SIZE,
+              (GRID_HEIGHT / 2 - block.y) * GRID_CELL_SIZE, // Assuming block.y is already the correct relative position
+              0
+            )
+          }
           color={Color3.Random()}
         />
       ))}
