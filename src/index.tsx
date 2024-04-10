@@ -6,19 +6,15 @@ import { Engine, Scene } from 'react-babylonjs'
 import * as BABYLON from 'babylonjs'
 import '@babylonjs/loaders'
 import { Vector3 } from '@babylonjs/core'
-import { createInitialGameState, updateBlockMeshes, update } from './TetrisGame'
+import { createInitialGameState, updateBlockMeshes, update, moveBlock } from './TetrisGame'
 import { CreateTetrisBlocks } from './CreateTetrisBlocks'
 import { CreateGridBoundary } from './CreateGridBoundary'
-
-const LEFT_EYE_LAYER = 0x10000000 // Bitmask for the left eye layer
-const RIGHT_EYE_LAYER = 0x20000000 // Bitmask for the right eye layer
-const UI_GAME_BOARD_LAYER = 0x40000000 // Bitmask for UI/game board layer
+import { LEFT_EYE_LAYER, RIGHT_EYE_LAYER, UI_GAME_BOARD_LAYER } from './constants'
 // @ts-nocheck
-
+const initialState = createInitialGameState()
 const App = () => {
-  const [gameState, setGameState] = useState(createInitialGameState())
+  const [gameState, setGameState] = useState(initialState)
   const [scene, setScene] = useState(null)
-  const [isRightCamera, setIsRightCamera] = useState(true)
 
   useEffect(() => {
     if (!scene) return
@@ -34,19 +30,46 @@ const App = () => {
       scene.onBeforeCameraRenderObservable.removeCallback(onBeforeRender)
     }
   }, [scene, gameState])
+  const handleKeyPress = (event) => {
+    switch (event.key) {
+      case 'ArrowLeft':
+        // Attempt to move the block left
+        setGameState((currentGameState) => moveBlock(currentGameState, -1, 0))
+        break
+      case 'ArrowRight':
+        // Attempt to move the block right
+        setGameState((currentGameState) => moveBlock(currentGameState, 1, 0))
+        break
+      case 'ArrowDown':
+        // Attempt to move the block down faster
+        setGameState((currentGameState) => update(currentGameState))
+        break
+      default:
+        break
+    }
+  }
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (scene) {
-        setGameState((prevGameState) => {
-          let newGameState = update(prevGameState, scene, true)
-          newGameState = updateBlockMeshes(newGameState, scene, true)
-          return newGameState
-        })
-      }
-    }, 1000)
+    // Add event listener when the component mounts
+    window.addEventListener('keydown', handleKeyPress)
 
-    return () => clearInterval(intervalId)
+    return () => {
+      // Remove event listener when the component unmounts
+      window.removeEventListener('keydown', handleKeyPress)
+    }
+  }, [])
+
+  useEffect(() => {
+    // const intervalId = setInterval(() => {
+    //   if (scene) {
+    //     setGameState((prevGameState) => {
+    //       let newGameState = update(prevGameState, scene, true)
+    //       newGameState = updateBlockMeshes(newGameState, scene, true)
+    //       return newGameState
+    //     })
+    //   }
+    // }, 1000)
+    // return () => clearInterval(intervalId)
   }, [scene])
   //@ts-ignore
   return (
@@ -60,7 +83,7 @@ const App = () => {
         <vrExperienceHelper webVROptions={{ createDeviceOrientationCamera: false }} enableInteractions={true} />
 
         <CreateGridBoundary />
-        <CreateTetrisBlocks gameState={gameState} isRightCamera={isRightCamera} />
+        <CreateTetrisBlocks gameState={gameState} />
       </Scene>
     </Engine>
   )
