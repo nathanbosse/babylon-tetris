@@ -23,13 +23,18 @@ function spawnNewBlock(): TetrisShape & { position: Block } {
   const shapeType = shapeTypes[Math.floor(Math.random() * shapeTypes.length)]
   const newBlock = createShape(shapeType)
 
-  const pieceWidth = Math.max(...newBlock.blocks.map((block) => block.x)) + 1 // +1 for 0 index
-  const gridCenterX = Math.floor((GRID_WIDTH / 2 - pieceWidth) / 2)
+  // Calculate the width of the new block
+  const minX = Math.min(...newBlock.blocks.map((block) => block.x))
+  const maxX = Math.max(...newBlock.blocks.map((block) => block.x))
+  const pieceWidth = maxX - minX + 1
+
+  // Center the block in the grid
+  const gridCenterX = Math.floor((GRID_WIDTH - pieceWidth) / 2)
   const gridTopY = 0 // Start from the top
 
   return {
     ...newBlock,
-    position: { x: gridCenterX, y: gridTopY }, // Start from the top
+    position: { x: gridCenterX, y: gridTopY }, // Updated to start from the grid center
     blocks: newBlock.blocks.map((block) => ({
       ...block,
       x: block.x + gridCenterX,
