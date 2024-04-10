@@ -6,7 +6,7 @@ import { Engine, Scene } from 'react-babylonjs'
 import * as BABYLON from 'babylonjs'
 import '@babylonjs/loaders'
 import { Vector3 } from '@babylonjs/core'
-import { createInitialGameState, updateBlockMeshes, update, moveBlock } from './TetrisGame'
+import { createInitialGameState, updateBlockMeshes, update, moveBlock, rotateBlock } from './TetrisGame'
 import { CreateTetrisBlocks } from './CreateTetrisBlocks'
 import { CreateGridBoundary } from './CreateGridBoundary'
 import { LEFT_EYE_LAYER, RIGHT_EYE_LAYER, UI_GAME_BOARD_LAYER } from './constants'
@@ -43,6 +43,10 @@ const App = () => {
       case 'ArrowDown':
         // Attempt to move the block down faster
         setGameState((currentGameState) => update(currentGameState))
+        break
+      case 'ArrowUp':
+        // Attempt to move the block down faster
+        setGameState((currentGameState) => rotateBlock(currentGameState))
         break
       default:
         break

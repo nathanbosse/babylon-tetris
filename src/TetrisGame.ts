@@ -100,25 +100,45 @@ function integrateBlockIntoGrid(gameState: GameState): (Block | null)[][] {
 }
 
 export function rotateBlock(gameState: GameState): GameState {
-  const rotatedBlocks = rotateShape(gameState.currentBlock.blocks)
+  // Clone the currentBlock to avoid direct mutation
+  const currentBlock = { ...gameState.currentBlock }
 
-  const isValid = rotatedBlocks.every((block) => {
-    const newX = gameState.currentBlock.position.x + block.x
-    const newY = gameState.currentBlock.position.y + block.y
-    return isPositionValid(gameState.grid, newX, newY)
+  // Determine the rotation pivot; using the block's position as pivot for simplicity
+  const pivot = currentBlock.position
+
+  // Rotate each block around the pivot
+  const rotatedBlocks = currentBlock.blocks.map((block) => {
+    // Calculate block's position relative to the pivot
+    const relativeX = block.x - pivot.x
+    const relativeY = block.y - pivot.y
+
+    // Rotate 90 degrees clockwise
+    const rotatedX = -relativeY
+    const rotatedY = relativeX
+
+    // Translate back to the grid
+    return {
+      ...block,
+      x: rotatedX + pivot.x,
+      y: rotatedY + pivot.y
+    }
   })
+
+  // Check if the new position for each block is valid
+  const isValid = rotatedBlocks.every((block) => isPositionValid(gameState.grid, block.x, block.y))
 
   if (isValid) {
     return {
       ...gameState,
       currentBlock: {
-        ...gameState.currentBlock,
+        ...currentBlock,
         blocks: rotatedBlocks
       }
     }
+  } else {
+    // If the rotation results in an invalid position, return the original gameState
+    return gameState
   }
-
-  return gameState
 }
 
 function rotateShape(blocks: Block[]): Block[] {
