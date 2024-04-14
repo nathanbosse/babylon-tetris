@@ -7,11 +7,11 @@ export const CreateGridBoundary: React.FC = () => {
   const height = GRID_CELL_SIZE * GRID_HEIGHT
   const width = GRID_CELL_SIZE * GRID_WIDTH
 
-  // Center positions based on the new (0,0) logic
-  const topPositionY = (GRID_CELL_SIZE * GRID_HEIGHT) / 2 + thickness / 2
-  const bottomPositionY = -(GRID_CELL_SIZE * GRID_HEIGHT) / 2 - thickness / 2
-  const leftPositionX = -(GRID_CELL_SIZE * GRID_WIDTH) / 2 - thickness / 2
-  const rightPositionX = (GRID_CELL_SIZE * GRID_WIDTH) / 2 + thickness / 2
+  // Center positions for grid boundary placement
+  const topPositionY = (GRID_CELL_SIZE * GRID_HEIGHT) / 2
+  const bottomPositionY = -(GRID_CELL_SIZE * GRID_HEIGHT) / 2
+  const leftPositionX = -(GRID_CELL_SIZE * GRID_WIDTH) / 2
+  const rightPositionX = (GRID_CELL_SIZE * GRID_WIDTH) / 2
 
   return (
     <>
@@ -21,7 +21,7 @@ export const CreateGridBoundary: React.FC = () => {
         width={width}
         height={thickness}
         depth={1}
-        position={new Vector3(0, topPositionY, 0)}
+        position={new Vector3(0, topPositionY + thickness / 2, 0)}
         layerMask={UI_GAME_BOARD_LAYER}
       />
       {/* Bottom boundary */}
@@ -30,7 +30,7 @@ export const CreateGridBoundary: React.FC = () => {
         width={width}
         height={thickness}
         depth={1}
-        position={new Vector3(0, bottomPositionY, 0)}
+        position={new Vector3(0, bottomPositionY - thickness / 2, 0)}
         layerMask={UI_GAME_BOARD_LAYER}
       />
       {/* Left boundary */}
@@ -39,7 +39,7 @@ export const CreateGridBoundary: React.FC = () => {
         width={thickness}
         height={height}
         depth={1}
-        position={new Vector3(leftPositionX, 0, 0)}
+        position={new Vector3(leftPositionX - thickness / 2, 0, 0)}
         layerMask={UI_GAME_BOARD_LAYER}
       />
       {/* Right boundary */}
@@ -48,41 +48,14 @@ export const CreateGridBoundary: React.FC = () => {
         width={thickness}
         height={height}
         depth={1}
-        position={new Vector3(rightPositionX, 0, 0)}
+        position={new Vector3(rightPositionX + thickness / 2, 0, 0)}
         layerMask={UI_GAME_BOARD_LAYER}
       />
-      {/* Top Left */}
-      <box
-        name="topLeft"
-        layerMask={UI_GAME_BOARD_LAYER}
-        size={1}
-        position={new Vector3(-GRID_WIDTH / 2, GRID_HEIGHT / 2, 0)}
-        color={Color3.Blue()}
-      />
-      {/* Top Right */}
-      <box
-        name="topRight"
-        layerMask={UI_GAME_BOARD_LAYER}
-        size={1}
-        position={new Vector3(GRID_WIDTH / 2, GRID_HEIGHT / 2, 0)}
-        color={Color3.Green()}
-      />
-      {/* Bottom Left */}
-      <box
-        name="bottomLeft"
-        layerMask={UI_GAME_BOARD_LAYER}
-        size={1}
-        position={new Vector3(-GRID_WIDTH / 2, -GRID_HEIGHT / 2, 0)}
-        color={Color3.Yellow()}
-      />
-      {/* Bottom Right */}
-      <box
-        name="bottomRight"
-        layerMask={UI_GAME_BOARD_LAYER}
-        size={1}
-        position={new Vector3(GRID_WIDTH / 2, -GRID_HEIGHT / 2, 0)}
-        color={Color3.Purple()}
-      />
+      {/* Debugging corners */}
+      <box name="topLeft" size={1} position={new Vector3(leftPositionX, topPositionY, 0)} color={Color3.Blue()} />
+      <box name="topRight" size={1} position={new Vector3(rightPositionX, topPositionY, 0)} color={Color3.Green()} />
+      <box name="bottomLeft" size={1} position={new Vector3(leftPositionX, bottomPositionY, 0)} color={Color3.Yellow()} />
+      <box name="bottomRight" size={1} position={new Vector3(rightPositionX, bottomPositionY, 0)} color={Color3.Purple()} />
     </>
   )
 }

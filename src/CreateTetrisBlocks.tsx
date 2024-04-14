@@ -1,6 +1,4 @@
 import React from 'react'
-import * as BABYLON from 'babylonjs'
-import '@babylonjs/loaders'
 import { Vector3, Color3 } from '@babylonjs/core'
 import { RIGHT_EYE_LAYER, LEFT_EYE_LAYER, GRID_CELL_SIZE, GRID_HEIGHT, GRID_WIDTH } from './constants'
 
@@ -12,18 +10,17 @@ export const CreateTetrisBlocks = ({ gameState }) => {
           key={index}
           name={`block-${index}`}
           size={GRID_CELL_SIZE}
-          layerMask={LEFT_EYE_LAYER} // Ensure visibility on the left eye and UI/game board layer
+          layerMask={LEFT_EYE_LAYER}
           position={
             new Vector3(
-              (block.x - GRID_WIDTH / 2) * GRID_CELL_SIZE,
-              (GRID_HEIGHT / 2 - block.y) * GRID_CELL_SIZE, // Assuming block.y is already the correct relative position
+              (block.x - GRID_WIDTH / 2) * GRID_CELL_SIZE + GRID_CELL_SIZE / 2, // Centering block in the cell
+              (GRID_HEIGHT / 2 - block.y) * GRID_CELL_SIZE - GRID_CELL_SIZE / 2, // Centering block in the cell
               0
             )
           }
           color={Color3.Random()}
         />
       ))}
-      {/* Render placed blocks in the grid */}
       {gameState.grid.map((row, rowIndex) =>
         row.map((cell, colIndex) =>
           cell ? (
@@ -31,15 +28,15 @@ export const CreateTetrisBlocks = ({ gameState }) => {
               key={`placed-block-${rowIndex}-${colIndex}`}
               name={`placed-block-${rowIndex}-${colIndex}`}
               size={GRID_CELL_SIZE}
-              layerMask={RIGHT_EYE_LAYER} // Use the right eye and UI/game board layer for placed blocks
+              layerMask={RIGHT_EYE_LAYER}
               position={
                 new Vector3(
-                  (colIndex - GRID_WIDTH / 2) * GRID_CELL_SIZE, // Adjusting x position to Babylon grid
-                  (GRID_HEIGHT / 2 - rowIndex) * GRID_CELL_SIZE, // Adjusting y position to Babylon grid and inverting y-axis
+                  (colIndex - GRID_WIDTH / 2) * GRID_CELL_SIZE + GRID_CELL_SIZE / 2, // Adjust for centering
+                  (GRID_HEIGHT / 2 - rowIndex) * GRID_CELL_SIZE - GRID_CELL_SIZE / 2, // Adjust for centering
                   0
                 )
               }
-              color={cell.color || Color3.Random()} // Assuming cell contains color information; otherwise, random color
+              color={cell.color || Color3.Random()}
             />
           ) : null
         )

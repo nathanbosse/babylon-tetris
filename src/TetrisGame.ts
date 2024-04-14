@@ -4,13 +4,15 @@ import { GRID_HEIGHT, GRID_WIDTH } from './constants'
 export interface GameState {
   grid: (Block | null)[][]
   currentBlock: TetrisShape & { position: Block }
+  linesCleared: number
 }
 
 // Create the initial game state
 export function createInitialGameState(): GameState {
   return {
     grid: createEmptyGrid(),
-    currentBlock: spawnNewBlock()
+    currentBlock: spawnNewBlock(),
+    linesCleared: 0
   }
 }
 
@@ -141,11 +143,6 @@ export function rotateBlock(gameState: GameState): GameState {
   }
 }
 
-function rotateShape(blocks: Block[]): Block[] {
-  // Rotate shape 90 degrees clockwise
-  return blocks.map((block) => ({ x: -block.y, y: block.x }))
-}
-
 export function checkForCompleteLines(gameState: GameState): GameState {
   const newGrid = gameState.grid.map((row) => row.slice())
   let linesCleared = 0
@@ -160,7 +157,8 @@ export function checkForCompleteLines(gameState: GameState): GameState {
 
   return {
     ...gameState,
-    grid: newGrid
+    grid: newGrid,
+    linesCleared: gameState.linesCleared + linesCleared
   }
 }
 

@@ -5,10 +5,14 @@ import { createRoot } from 'react-dom/client'
 import { Engine, Scene } from 'react-babylonjs'
 import * as BABYLON from 'babylonjs'
 import '@babylonjs/loaders'
+import '@babylonjs/gui' // Make sure to import the GUI
+
 import { Vector3 } from '@babylonjs/core'
-import { createInitialGameState, updateBlockMeshes, update, moveBlock, rotateBlock } from './TetrisGame'
+import { createInitialGameState, update, moveBlock, rotateBlock } from './TetrisGame'
 import { CreateTetrisBlocks } from './CreateTetrisBlocks'
 import { CreateGridBoundary } from './CreateGridBoundary'
+import { VRController } from './VRController'
+import { Scoreboard } from './Scoreboard'
 import { LEFT_EYE_LAYER, RIGHT_EYE_LAYER, UI_GAME_BOARD_LAYER } from './constants'
 // @ts-nocheck
 const initialState = createInitialGameState()
@@ -63,18 +67,6 @@ const App = () => {
     }
   }, [])
 
-  useEffect(() => {
-    // const intervalId = setInterval(() => {
-    //   if (scene) {
-    //     setGameState((prevGameState) => {
-    //       let newGameState = update(prevGameState, scene, true)
-    //       newGameState = updateBlockMeshes(newGameState, scene, true)
-    //       return newGameState
-    //     })
-    //   }
-    // }, 1000)
-    // return () => clearInterval(intervalId)
-  }, [scene])
   //@ts-ignore
   return (
     <Engine antialias adaptToDeviceRatio canvasId="babylon-canvas">
@@ -85,8 +77,9 @@ const App = () => {
         <arcRotateCamera name="camera" alpha={-Math.PI / 2} beta={Math.PI / 2} radius={25} target={Vector3.Zero()} />
         <hemisphericLight name="light" direction={new Vector3(1, 1, 0)} intensity={0.7} />
         <vrExperienceHelper webVROptions={{ createDeviceOrientationCamera: false }} enableInteractions={true} />
-
+        <Scoreboard gameState={gameState} />
         <CreateGridBoundary />
+        <VRController scene={scene} />
         <CreateTetrisBlocks gameState={gameState} />
       </Scene>
     </Engine>
