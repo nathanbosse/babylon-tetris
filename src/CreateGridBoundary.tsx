@@ -51,11 +51,6 @@ export const CreateGridBoundary: React.FC = () => {
         position={new Vector3(rightPositionX + thickness / 2, 0, 0)}
         layerMask={UI_GAME_BOARD_LAYER}
       />
-      {/* Debugging corners */}
-      <box name="topLeft" size={1} position={new Vector3(leftPositionX, topPositionY, 0)} color={Color3.Blue()} />
-      <box name="topRight" size={1} position={new Vector3(rightPositionX, topPositionY, 0)} color={Color3.Green()} />
-      <box name="bottomLeft" size={1} position={new Vector3(leftPositionX, bottomPositionY, 0)} color={Color3.Yellow()} />
-      <box name="bottomRight" size={1} position={new Vector3(rightPositionX, bottomPositionY, 0)} color={Color3.Purple()} />
     </>
   )
 }

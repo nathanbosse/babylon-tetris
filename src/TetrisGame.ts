@@ -34,16 +34,30 @@ function spawnNewBlock(): TetrisShape & { position: Block } {
   const gridCenterX = Math.floor((GRID_WIDTH - pieceWidth) / 2)
   const gridTopY = 0 // Start from the top
 
+  const color = blockColorsHex[Math.floor(Math.random() * blockColorsHex.length)]
+
   return {
     ...newBlock,
     position: { x: gridCenterX, y: gridTopY }, // Updated to start from the grid center
     blocks: newBlock.blocks.map((block) => ({
       ...block,
       x: block.x + gridCenterX,
-      y: block.y + gridTopY
+      y: block.y + gridTopY,
+      color: color
     }))
   }
 }
+
+// Array of predefined block colors in hex
+const blockColorsHex = [
+  '#00FFFF', // Cyan
+  '#FFFF00', // Yellow
+  '#FF00FF', // Purple
+  '#00FF00', // Green
+  '#FF0000', // Red
+  '#0000FF', // Blue
+  '#FFA500' // Orange
+]
 
 export function moveBlock(gameState: GameState, deltaX: number, deltaY: number): GameState {
   // Calculate new position for each block in the shape

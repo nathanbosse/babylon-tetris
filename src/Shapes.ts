@@ -61,6 +61,7 @@ export const TetrisShapes: Record<string, TetrisShape> = {
 export interface Block {
   x: number
   y: number
+  color?: string
 }
 
 export interface TetrisShape {
