@@ -101,7 +101,7 @@ const App = () => {
   return (
     <Engine antialias adaptToDeviceRatio canvasId="babylon-canvas">
       <Scene onSceneMount={onSceneReady}>
-        {/* <arcRotateCamera name="camera" alpha={-Math.PI / 2} beta={Math.PI / 2} radius={25} target={Vector3.Zero()} maxZ={5000} /> */}
+        <arcRotateCamera name="camera" alpha={-Math.PI / 2} beta={Math.PI / 2} radius={25} target={Vector3.Zero()} maxZ={5000} />
         <hemisphericLight name="light" direction={new Vector3(1, 1, 0)} intensity={0.7} />
         {/* <vrExperienceHelper webVROptions={{ createDeviceOrientationCamera: false }} enableInteractions={true} /> */}
         <Scoreboard gameState={gameState} />
