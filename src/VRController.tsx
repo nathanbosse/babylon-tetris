@@ -1,17 +1,29 @@
 import React, { useEffect, useRef } from 'react'
 import { useScene } from 'react-babylonjs'
 import { Vector3, MeshBuilder } from '@babylonjs/core'
+import * as BABYLON from 'babylonjs'
 import { UI_GAME_BOARD_LAYER } from './constants'
 
 const VRController = ({ scene, controllerInput }) => {
   const controllerMeshRef = useRef(null)
   const layerMask = UI_GAME_BOARD_LAYER
-
+  const [XREnabled, setXREnabled] = React.useState(false)
   useEffect(() => {
-    if (scene) {
+    if (scene && !XREnabled) {
       const setupXR = async () => {
-        const xr = await scene.createDefaultXRExperienceAsync({
-          // Additional options can be specified here
+        const xr = await scene.createDefaultXRExperienceAsync({})
+        console.log('WebXR initialized successfully:', xr)
+        const xrCamera = xr.baseExperience.camera
+        xr.baseExperience.sessionManager.onXRSessionInit.add(() => {
+          // Adjustments right when the XR session starts
+          setXREnabled(true) // Assuming you pass a setter or manage state at a higher level
+          xr.baseExperience.camera.position = new BABYLON.Vector3(0, 5, -10)
+        })
+
+        xr.baseExperience.sessionManager.onXRSessionEnded.add(() => {
+          // This event indicates XR is ending
+          setXREnabled(false) // Update state accordingly
+          console.log('XR Session Ended')
         })
 
         xr.input.onControllerAddedObservable.add((controller) => {
@@ -42,11 +54,11 @@ const VRController = ({ scene, controllerInput }) => {
               }
             })
 
-            controller.onFrameObservable.add(() => {
-              if (controllerMeshRef.current) {
-                controllerMeshRef.current.position = controller.pointer.position
-              }
-            })
+            // controller.onFrameObservable.add(() => {
+            //   if (controllerMeshRef.current) {
+            //     controllerMeshRef.current.position = controller.pointer.position
+            //   }
+            // })
           })
         })
       }

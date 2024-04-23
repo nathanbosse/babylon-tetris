@@ -6,6 +6,7 @@ import { Engine, Scene } from 'react-babylonjs'
 import * as BABYLON from 'babylonjs'
 import '@babylonjs/loaders'
 import '@babylonjs/gui' // Make sure to import the GUI
+import { GridMaterial } from '@babylonjs/materials/grid'
 
 import { Vector3, Color4 } from '@babylonjs/core'
 import { createInitialGameState, update, moveBlock, rotateBlock } from './TetrisGame'
@@ -35,6 +36,7 @@ const App = () => {
       scene.onBeforeCameraRenderObservable.removeCallback(onBeforeRender)
     }
   }, [scene, gameState])
+
   const handleKeyPress = (event) => {
     switch (event.key) {
       case 'ArrowLeft':
@@ -68,6 +70,10 @@ const App = () => {
     }
   }, [])
 
+  const onSceneReady = async ({ scene, canvas }) => {
+    setScene(scene)
+  }
+
   const handleControllerInput = (input: 'up' | 'down' | 'left' | 'right') => {
     switch (input) {
       case 'left':
@@ -94,19 +100,15 @@ const App = () => {
   //@ts-ignore
   return (
     <Engine antialias adaptToDeviceRatio canvasId="babylon-canvas">
-      <Scene
-        clearColor={new Color4(0.5, 0.8, 0.92, 1)} // A light blue sky color
-        onSceneMount={({ scene }) => {
-          setScene(scene)
-        }}>
-        <arcRotateCamera name="camera" alpha={-Math.PI / 2} beta={Math.PI / 2} radius={25} target={Vector3.Zero()} maxZ={5000} />
+      <Scene onSceneMount={onSceneReady}>
+        {/* <arcRotateCamera name="camera" alpha={-Math.PI / 2} beta={Math.PI / 2} radius={25} target={Vector3.Zero()} maxZ={5000} /> */}
         <hemisphericLight name="light" direction={new Vector3(1, 1, 0)} intensity={0.7} />
-        <vrExperienceHelper webVROptions={{ createDeviceOrientationCamera: false }} enableInteractions={true} />
+        {/* <vrExperienceHelper webVROptions={{ createDeviceOrientationCamera: false }} enableInteractions={true} /> */}
         <Scoreboard gameState={gameState} />
         <CreateGridBoundary scene={scene} />
         <Skybox scene={scene} />
         <VRController scene={scene} controllerInput={handleControllerInput} />
-        <CreateTetrisBlocks gameState={gameState} scene={scene} />
+        <CreateTetrisBlocks gameState={gameState} />
       </Scene>
     </Engine>
   )

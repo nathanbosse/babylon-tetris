@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import { Plane, AdvancedDynamicTexture, StackPanel, Rectangle, Button, TextBlock } from 'react-babylonjs'
 import { Vector3 } from '@babylonjs/core'
 import { UI_GAME_BOARD_LAYER } from './constants'
@@ -27,14 +27,14 @@ export const Scoreboard = ({ gameState }) => {
           thickness={2}
           cornerRadius={20}
           background="green">
-          <StackPanel widthInPixels={500} heightInPixels={250} isVertical={true}>
-            <Button name="scoreButton" widthInPixels={220} heightInPixels={60} background="black">
+          <StackPanel widthInPixels={1000} heightInPixels={350} isVertical={true}>
+            <Button name="scoreButton" widthInPixels={320} heightInPixels={100} background="black">
               <TextBlock text={`Score: ${linesCleared}`} color="white" fontSize={24} />
             </Button>
-            <Button name="resetButton" widthInPixels={220} heightInPixels={60} background="red" onPointerDownObservable={onReset}>
+            <Button name="resetButton" widthInPixels={320} heightInPixels={100} background="red" onPointerDownObservable={onReset}>
               <TextBlock text="Reset" color="white" fontSize={24} />
             </Button>
-            <Button name="startButton" widthInPixels={220} heightInPixels={60} background="blue" onPointerDownObservable={onStart}>
+            <Button name="startButton" widthInPixels={320} heightInPixels={100} background="blue" onPointerDownObservable={onStart}>
               <TextBlock text="Start" color="white" fontSize={24} />
             </Button>
           </StackPanel>
