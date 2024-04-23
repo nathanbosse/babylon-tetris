@@ -28,31 +28,24 @@ const VRController = ({ scene, controllerInput }) => {
 
         xr.input.onControllerAddedObservable.add((controller) => {
           controller.onMotionControllerInitObservable.add((motionController) => {
-            if (!controllerMeshRef.current) {
-              controllerMeshRef.current = MeshBuilder.CreateSphere('controllerSphere', { diameter: 0.1 }, scene)
-              controllerMeshRef.current.layerMask = layerMask
-              controllerMeshRef.current.material = new BABYLON.StandardMaterial('controllerMat', scene)
-              controllerMeshRef.current.material.diffuseColor = new BABYLON.Color3(1, 0, 0)
+            if (motionController.handedness === 'right') {
+              // Handle custom right joystick input (for actions other than camera movement)
+              const rightJoystick = motionController.getComponent('xr-standard-thumbstick')
+              if (rightJoystick) {
+                rightJoystick.onAxisValueChangedObservable.clear()
+                rightJoystick.onAxisValueChangedObservable.add((values) => {
+                  handleRightJoystickInput(values)
+                })
+              }
+            } else if (motionController.handedness === 'left') {
+              // Handle locomotion with the left joystick
+              const leftJoystick = motionController.getComponent('xr-standard-thumbstick')
+              if (leftJoystick) {
+                leftJoystick.onAxisValueChangedObservable.add((values) => {
+                  handleLeftJoystickMovement(values, xr.baseExperience.camera)
+                })
+              }
             }
-
-            const joystick = motionController.getComponent('xr-standard-thumbstick')
-            joystick.onAxisValueChangedObservable.add((values) => {
-              if (values.y < -0.5) {
-                // Down
-                controllerInput('down')
-              } else if (values.y > 0.5) {
-                // Up
-                controllerInput('up')
-              }
-
-              if (values.x < -0.5) {
-                // Left
-                controllerInput('left')
-              } else if (values.x > 0.5) {
-                // Right
-                controllerInput('right')
-              }
-            })
 
             // controller.onFrameObservable.add(() => {
             //   if (controllerMeshRef.current) {
@@ -67,7 +60,67 @@ const VRController = ({ scene, controllerInput }) => {
     }
   }, [scene, controllerInput])
 
+  function handleLeftJoystickMovement(values, camera) {
+    const speed = 0.05
+    let forward = new BABYLON.Vector3(Math.sin(camera.rotation.y) * speed * values.y, 0, Math.cos(camera.rotation.y) * speed * values.y)
+    let right = new BABYLON.Vector3(
+      Math.sin(camera.rotation.y + Math.PI / 2) * speed * values.x,
+      0,
+      Math.cos(camera.rotation.y + Math.PI / 2) * speed * values.x
+    )
+    camera.position.addInPlace(forward.addInPlace(right))
+  }
+
+  const handleRightJoystickInput = (values) => {
+    const debouncedDown = rateLimit(() => controllerInput('down'), 500) // Fire down event at most twice per second
+    const debouncedLeft = rateLimit(() => controllerInput('left'), 500) // Fire left event at most twice per second
+    const debouncedRight = rateLimit(() => controllerInput('right'), 500) // Fire right event at most twice per second
+    let upFired = false // State to track if 'up' has been fired
+
+    const fireOnceUp = () => {
+      if (!upFired) {
+        controllerInput('up')
+        upFired = true
+      }
+    }
+
+    const resetUp = () => {
+      upFired = false
+    }
+
+    if (values.y < -0.5) {
+      // Down
+      debouncedDown()
+      resetUp() // Reset 'up' when moving in any other direction
+    } else if (values.y > 0.5) {
+      // Up
+      fireOnceUp()
+    } else {
+      // Neutral position, reset the 'up' fire state
+      resetUp()
+    }
+
+    if (values.x < -0.5) {
+      // Left
+      debouncedLeft()
+    } else if (values.x > 0.5) {
+      // Right
+      debouncedRight()
+    }
+  }
+
   return null // This component does not render any React elements
 }
 
 export { VRController }
+
+function rateLimit(func, interval) {
+  let lastExecuted = 0
+  return function () {
+    const now = Date.now()
+    if (now - lastExecuted > interval) {
+      func.apply(this, arguments)
+      lastExecuted = now
+    }
+  }
+}
