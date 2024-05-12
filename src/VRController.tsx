@@ -88,11 +88,11 @@ const VRController = ({ scene, controllerInput }) => {
       upFired = false
     }
 
-    if (values.y < -0.5) {
+    if (values.y > -0.5) {
       // Down
       debouncedDown()
       resetUp() // Reset 'up' when moving in any other direction
-    } else if (values.y > 0.5) {
+    } else if (values.y < 0.5) {
       // Up
       fireOnceUp()
     } else {

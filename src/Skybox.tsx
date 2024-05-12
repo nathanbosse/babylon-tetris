@@ -18,14 +18,14 @@ const Skybox = ({ scene }) => {
       skyMaterial.mieCoefficient = 0.005 // Amount of directional scattering
       skyMaterial.mieDirectionalG = 0.8 // The directionality of the scattering
       const skybox = MeshBuilder.CreateBox('skyBox', { size: 1000.0 }, scene)
-      skybox.position = Vector3.Zero() // Position the skybox at the scene origin
+      // skybox.position = Vector3.Zero() // Position the skybox at the scene origin
 
       // Rotate the skybox by 180 degrees around the Y-axis to face the camera
-      const rotationQuaternion = Quaternion.RotationAxis(Vector3.Forward(), Math.PI)
-      skybox.rotationQuaternion = rotationQuaternion
+      skybox.rotation.y = Math.PI // Rotates the skybox to face the opposite direction
 
       skybox.material = skyMaterial
-      skybox.infiniteDistance = true
+
+      // skybox.infiniteDistance = true
       skybox.layerMask = UI_GAME_BOARD_LAYER
     }
   }, [scene])
