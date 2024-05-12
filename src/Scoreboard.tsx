@@ -5,37 +5,31 @@ import { UI_GAME_BOARD_LAYER } from './constants'
 
 export const Scoreboard = ({ gameState }) => {
   const { linesCleared } = gameState
-  const onStart = () => {
-    alert('onStart')
-  }
-  const onReset = () => {
-    alert('onReset')
-  }
-  let layerMask = UI_GAME_BOARD_LAYER
+
+  const onStart = () => alert('Game started!')
+  const onReset = () => alert('Game reset!')
 
   return (
     <Plane
       name="scoreboard-plane"
-      size={5} // Ensure this is large enough to accommodate your GUI elements
-      position={new Vector3(-7, 3, 0)} // Adjust position to ensure visibility
-      layerMask={layerMask}>
-      <AdvancedDynamicTexture name="scoreboard-texture" createForParentMesh={true}>
+      size={10} // Increased size for better readability
+      position={new Vector3(-9, 3, 0)} // Adjusted for visibility in your scene
+      layerMask={UI_GAME_BOARD_LAYER}>
+      <AdvancedDynamicTexture name="scoreboard-texture" createForParentMesh={true} height={1024} width={1024}>
         <Rectangle
           name="scoreboard-rect"
-          heightInPixels={550} // Using heightInPixels and widthInPixels ensures direct pixel control
-          widthInPixels={500}
-          thickness={2}
-          cornerRadius={20}
-          background="green">
-          <StackPanel widthInPixels={1000} heightInPixels={350} isVertical={true}>
-            <Button name="scoreButton" widthInPixels={320} heightInPixels={100} background="black">
-              <TextBlock text={`Score: ${linesCleared}`} color="white" fontSize={24} />
+          heightInPixels={600} // Increased height for a larger display
+          widthInPixels={800} // Increased width for a larger display
+          thickness={4}
+          cornerRadius={30}
+          background="grey">
+          <StackPanel isVertical={true} widthInPixels={750} heightInPixels={550}>
+            <TextBlock text={`Score: ${linesCleared}`} color="white" fontSize={40} heightInPixels={150} /> // Larger text
+            <Button name="startButton" widthInPixels={700} heightInPixels={150} background="blue" onPointerDownObservable={onStart}>
+              <TextBlock text="Start" color="white" fontSize={40} />
             </Button>
-            <Button name="resetButton" widthInPixels={320} heightInPixels={100} background="red" onPointerDownObservable={onReset}>
-              <TextBlock text="Reset" color="white" fontSize={24} />
-            </Button>
-            <Button name="startButton" widthInPixels={320} heightInPixels={100} background="blue" onPointerDownObservable={onStart}>
-              <TextBlock text="Start" color="white" fontSize={24} />
+            <Button name="resetButton" widthInPixels={700} heightInPixels={150} background="red" onPointerDownObservable={onReset}>
+              <TextBlock text="Reset" color="white" fontSize={40} />
             </Button>
           </StackPanel>
         </Rectangle>
