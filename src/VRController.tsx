@@ -8,6 +8,12 @@ const VRController = ({ scene, controllerInput }) => {
   const controllerMeshRef = useRef(null)
   const layerMask = UI_GAME_BOARD_LAYER
   const [XREnabled, setXREnabled] = React.useState(false)
+
+  const debouncedDown = useRef(rateLimit(() => controllerInput('down'), 500)).current
+  const debouncedLeft = useRef(rateLimit(() => controllerInput('left'), 500)).current
+  const debouncedRight = useRef(rateLimit(() => controllerInput('right'), 500)).current
+  const upFired = useRef(false)
+
   useEffect(() => {
     if (scene && !XREnabled) {
       const setupXR = async () => {
@@ -15,21 +21,18 @@ const VRController = ({ scene, controllerInput }) => {
         console.log('WebXR initialized successfully:', xr)
         const xrCamera = xr.baseExperience.camera
         xr.baseExperience.sessionManager.onXRSessionInit.add(() => {
-          // Adjustments right when the XR session starts
-          setXREnabled(true) // Assuming you pass a setter or manage state at a higher level
+          setXREnabled(true)
           xr.baseExperience.camera.position = new BABYLON.Vector3(0, 5, -10)
         })
 
         xr.baseExperience.sessionManager.onXRSessionEnded.add(() => {
-          // This event indicates XR is ending
-          setXREnabled(false) // Update state accordingly
+          setXREnabled(false)
           console.log('XR Session Ended')
         })
 
         xr.input.onControllerAddedObservable.add((controller) => {
           controller.onMotionControllerInitObservable.add((motionController) => {
             if (motionController.handedness === 'right') {
-              // Handle custom right joystick input (for actions other than camera movement)
               const rightJoystick = motionController.getComponent('xr-standard-thumbstick')
               if (rightJoystick) {
                 rightJoystick.onAxisValueChangedObservable.clear()
@@ -38,7 +41,6 @@ const VRController = ({ scene, controllerInput }) => {
                 })
               }
             } else if (motionController.handedness === 'left') {
-              // Handle locomotion with the left joystick
               const leftJoystick = motionController.getComponent('xr-standard-thumbstick')
               if (leftJoystick) {
                 leftJoystick.onAxisValueChangedObservable.add((values) => {
@@ -46,19 +48,13 @@ const VRController = ({ scene, controllerInput }) => {
                 })
               }
             }
-
-            // controller.onFrameObservable.add(() => {
-            //   if (controllerMeshRef.current) {
-            //     controllerMeshRef.current.position = controller.pointer.position
-            //   }
-            // })
           })
         })
       }
 
       setupXR().catch(console.error)
     }
-  }, [scene, controllerInput])
+  }, [scene, controllerInput, debouncedDown, debouncedLeft, debouncedRight])
 
   function handleLeftJoystickMovement(values, camera) {
     const speed = 0.05
@@ -72,44 +68,26 @@ const VRController = ({ scene, controllerInput }) => {
   }
 
   const handleRightJoystickInput = (values) => {
-    const debouncedDown = rateLimit(() => controllerInput('down'), 500) // Fire down event at most twice per second
-    const debouncedLeft = rateLimit(() => controllerInput('left'), 500) // Fire left event at most twice per second
-    const debouncedRight = rateLimit(() => controllerInput('right'), 500) // Fire right event at most twice per second
-    let upFired = false // State to track if 'up' has been fired
-
-    const fireOnceUp = () => {
-      if (!upFired) {
-        controllerInput('up')
-        upFired = true
-      }
-    }
-
-    const resetUp = () => {
-      upFired = false
-    }
-
     if (values.y > -0.5) {
-      // Down
       debouncedDown()
-      resetUp() // Reset 'up' when moving in any other direction
+      upFired.current = false
     } else if (values.y < 0.5) {
-      // Up
-      fireOnceUp()
+      if (!upFired.current) {
+        controllerInput('up')
+        upFired.current = true
+      }
     } else {
-      // Neutral position, reset the 'up' fire state
-      resetUp()
+      upFired.current = false
     }
 
     if (values.x < -0.5) {
-      // Left
       debouncedLeft()
     } else if (values.x > 0.5) {
-      // Right
       debouncedRight()
     }
   }
 
-  return null // This component does not render any React elements
+  return null
 }
 
 export { VRController }
